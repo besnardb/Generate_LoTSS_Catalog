@@ -29,6 +29,9 @@ dependencies = [
 where = ["src"]
 include = ["generate_lotss_catalog*"]
 
+[tool.setuptools.package-data]
+generate_lotss_catalog = ["data/*"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",

@@ -19,6 +19,8 @@ from astropy.coordinates import SkyCoord
 #from killms_v2.utils import validate_axis, serialize_complex, deserialize_complex, get_quantity_from_data, get_array_from_data
 import matplotlib.pyplot as plt
 from .utils import generate_n_values
+import numpy as np
+from importlib.resources import files
 
 
 class xcatalog():
@@ -449,6 +451,7 @@ class xcatalog():
         else:
             # this is the pickle for LOTSS_DR3
             pickle_filename="data/lotss_dr3.distribs.pickle.npy"
+            data_file = (files("generate_lotss_catalog")/ "data"/ "lotss_dr3.distribs.pickle.npy")
             # generate sources based on LoTSS-DR3 source density OR requested number
             if n_sources is None:
                 # estimate number of points to draw from density
@@ -460,7 +463,7 @@ class xcatalog():
             else:
                 n_sources_in_fov=n_sources
             # check that pickle is present
-            picklepath = Path(pickle_filename)
+            picklepath = Path(data_file)
             if picklepath.exists()==False:
                 raise FileNotFoundError(f"LoTSS-DR3 statistics file {pickle_filename} not found.")
             else: 
