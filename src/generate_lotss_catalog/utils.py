@@ -4,6 +4,59 @@ import astropy.units as u
 import numpy as np
 from astropy.coordinates import SkyCoord
 
+def generate_n_values(pickle_filename:str,
+                      n_vals:int,
+                      keylist:list=None,
+                      val_min:float=-np.inf,
+                      val_max:float=np.inf,
+                      plot=False) -> np.ndarray:
+    '''
+    Function which returns n random values drawn from the distribution associated
+    to the provided key, and bound within val_min and val_max.
+    '''
+    # open pickle
+    distribs = np.load(pickle_filename,allow_pickle=True).item()
+    if keylist is None:
+        keylist = distribs.keys()
+    for key in keylist:
+        if key not in distribs.keys():
+            raise ValueError(f"Requested key {key} not in the dictionary. Correct keys include: {[key for key in distribs.keys()]}")
+        if "bin_edges" not in key and "cdf" not in key: # skip bin_edge, cdf parts of dict
+            # build bin centres
+            bin_centres = 0.5*(distribs[key+"_bin_edges"][:-1] + distribs[key+"_bin_edges"][1:])
+            # apply edges
+            mask = (bin_centres > val_min) * (bin_centres < val_max)
+            bin_centres = bin_centres[mask]
+            # build masked CDF
+            cdf = np.cumsum((distribs[key][mask]))
+            # renormalise
+            cdf = cdf / cdf[-1]           
+            n_values = np.random.rand(n_vals)
+            value_bins = np.searchsorted(cdf, n_values)
+            random_from_cdf = bin_centres[value_bins]
+            if plot:
+                import pylab as plt
+#                bin_centres = bin_centres = 0.5*(10**distribs[key+"_bin_edges"][:-1] + 10**distribs[key+"_bin_edges"][1:])
+                print(f"Plotting {key}")
+                plt.suptitle(key)
+                plt.subplot(121)
+                plt.hist(distribs[key+"_bin_edges"][:-1], distribs[key+"_bin_edges"][1:], weights=distribs[key],density=True)
+                xmin = distribs[key+"_bin_edges"][0]
+                xmax = distribs[key+"_bin_edges"][-1]
+                plt.xlim((xmin,xmax))
+#                plt.hist(distribs[key+"_bin_edges"][:-1][::10], distribs[key+"_bin_edges"][1:][::10], weights=distribs[key][::10],density=True)
+                # make histogram for plotting
+                plt.title("Real distrib")
+                plt.subplot(122)
+                plt.hist(random_from_cdf, 100,density=True)
+                plt.title("Simu distrib")
+                plt.xlim((xmin,xmax))
+                plt.savefig(key+"_simu.png")
+                plt.clf()
+                print(f"Saved distrib as {key}_simu.png")
+
+    return random_from_cdf
+
 def validate_axis(input_var,
                     desired_physical_type:str,
                     output_unit:u.Unit|u.IrreducibleUnit) -> u.Quantity:

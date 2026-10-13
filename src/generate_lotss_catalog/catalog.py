@@ -16,9 +16,9 @@ import re
 from astropy.coordinates import SkyCoord
 
 # import from local libs
-from killms_v2.utils import validate_axis, serialize_complex, deserialize_complex, get_quantity_from_data, get_array_from_data
+#from killms_v2.utils import validate_axis, serialize_complex, deserialize_complex, get_quantity_from_data, get_array_from_data
 import matplotlib.pyplot as plt
-from simulator.generate_cdf_lotssDR3 import generate_n_values
+from .utils import generate_n_values
 
 
 class xcatalog():
